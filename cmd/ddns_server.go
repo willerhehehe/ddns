@@ -18,7 +18,10 @@ type Notifier struct {
 func (n Notifier) Notify(msg interface{}) {
 	t, ok := msg.(string)
 	if !ok {
-		n.Notify(fmt.Sprintf("Notify Error: msg.(string) error, msg: %v\n", msg))
+		err := n.SendMail(n.Username, []string{n.Username}, "DDNS服务通知", fmt.Sprintf("Notify Error: msg.(string) error, msg: %v\n", msg), "text/html")
+		if err != nil {
+			log.Println(fmt.Sprintf("Notify Error: n.SendMail error, msg: %v\n", msg))
+		}
 	}
 	err := n.SendMail(n.Username, []string{n.Username}, "DDNS服务通知", t, "text/html")
 	if err != nil {
