@@ -15,18 +15,21 @@ type notifier struct {
 	email.SimpleEmailClient
 }
 
-func (n notifier) Notify(msg interface{}) {
+func (n notifier) Notify(msg interface{}) error {
 	t, ok := msg.(string)
 	if !ok {
 		err := n.SendMail(n.Username, []string{n.Username}, "DDNS服务通知", fmt.Sprintf("Notify Error: msg.(string) error, msg: %v\n", msg), "text/html")
 		if err != nil {
 			log.Println(fmt.Sprintf("Notify Error: n.SendMail error, msg: %v\n", msg))
+			return err
 		}
 	}
 	err := n.SendMail(n.Username, []string{n.Username}, "DDNS服务通知", t, "text/html")
 	if err != nil {
 		log.Println(fmt.Sprintf("Notify Error: n.SendMail error, msg: %v\n", msg))
+		return err
 	}
+	return nil
 }
 
 func main() {

@@ -27,8 +27,9 @@ type testNotifier struct {
 	t *testing.T
 }
 
-func (n testNotifier) Notify(msg interface{}) {
+func (n testNotifier) Notify(msg interface{}) error {
 	n.t.Log(fmt.Sprintf("notify: %v\n", msg))
+	return nil
 }
 
 func TestDDnsServer(t *testing.T) {

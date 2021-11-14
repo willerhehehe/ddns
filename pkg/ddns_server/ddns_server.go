@@ -19,7 +19,7 @@ type DnsHelper interface {
 }
 
 type Notifier interface {
-	Notify(interface{})
+	Notify(interface{}) error
 }
 
 type DDnsServer struct {
@@ -47,8 +47,24 @@ func (s *DDnsServer) compareIP() {
 	}
 }
 
+func (s *DDnsServer) RetryNotify(msg string, retryTimes int, duration time.Duration) {
+	for i := 0; i < retryTimes; i++ {
+		err := s.Notifier.Notify(msg)
+		if err != nil {
+			time.Sleep(duration)
+			continue
+		} else {
+			break
+		}
+	}
+}
+
 func (s *DDnsServer) Run() {
-	s.Notifier.Notify(fmt.Sprintf("Start DDNS Server, Time: %v\n", time.Now()))
+	s.RetryNotify(
+		fmt.Sprintf("Start DDNS Server, Time: %v\n", time.Now()),
+		10,
+		time.Second*10,
+	)
 	go func() {
 		for {
 			s.compareIP()
@@ -67,7 +83,7 @@ func (s *DDnsServer) Run() {
 	go func() {
 		for {
 			msg := <-s.MsgChan
-			s.Notifier.Notify(msg)
+			_ = s.Notifier.Notify(msg)
 		}
 	}()
 
@@ -75,13 +91,19 @@ func (s *DDnsServer) Run() {
 	signal.Notify(c, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT)
 	for {
 		sig := <-c
-		s.Notifier.Notify(fmt.Sprintf("Get Signal: %v\n", sig))
 		switch sig {
-		case syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGINT:
-			s.Notifier.Notify(fmt.Sprintf("DDnsServer stop"))
+		case syscall.SIGQUIT:
+			_ = s.Notifier.Notify(fmt.Sprintf("DDnsServer stop by SIGQUIT"))
+			return
+		case syscall.SIGTERM:
+			_ = s.Notifier.Notify(fmt.Sprintf("DDnsServer stop by SIGTERM"))
+			return
+		case syscall.SIGINT:
+			_ = s.Notifier.Notify(fmt.Sprintf("DDnsServer stop by SIGINT"))
 			return
 		case syscall.SIGHUP:
 		default:
+			_ = s.Notifier.Notify(fmt.Sprintf("DDnsServer stop by DEFAULT"))
 			return
 		}
 	}
