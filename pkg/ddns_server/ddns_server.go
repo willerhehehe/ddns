@@ -1,4 +1,4 @@
-package ddns_server
+package ddnsserver
 
 import (
 	"fmt"

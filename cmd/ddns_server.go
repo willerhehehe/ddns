@@ -11,11 +11,11 @@ import (
 	"net"
 )
 
-type Notifier struct {
+type notifier struct {
 	email.SimpleEmailClient
 }
 
-func (n Notifier) Notify(msg interface{}) {
+func (n notifier) Notify(msg interface{}) {
 	t, ok := msg.(string)
 	if !ok {
 		err := n.SendMail(n.Username, []string{n.Username}, "DDNS服务通知", fmt.Sprintf("Notify Error: msg.(string) error, msg: %v\n", msg), "text/html")
@@ -39,7 +39,7 @@ func main() {
 			AccessKeySecret: conf.AccessKeySecret,
 			RecordId:        conf.RecordId,
 		},
-		Notifier: Notifier{
+		Notifier: notifier{
 			email.SimpleEmailClient{
 				Username: conf.Username,
 				Password: conf.Password,
