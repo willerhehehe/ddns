@@ -3,6 +3,7 @@ package internet_ip_helper
 import (
 	"ddns/pkg/ipv4_http"
 	"encoding/json"
+	"fmt"
 	"net"
 )
 
@@ -14,18 +15,21 @@ type InternetIPHelper struct {
 }
 
 func (h InternetIPHelper) GetInternetIP() (net.IP, error) {
-	url := "https://jsonip.com"
+	urls := []string{"https://api.ipify.org?format=json", "https://jsonip.com", "https://ipinfo.io"}
 	type IPResp struct {
 		IP net.IP `json:"ip"`
 	}
 	var ipResp IPResp
-	resp, err := ipv4_http.Get(url)
-	if err != nil {
-		return nil, err
+	for _, url := range urls {
+		resp, err := ipv4_http.Get(url)
+		if err != nil {
+			continue
+		}
+		err = json.Unmarshal(resp, &ipResp)
+		if err != nil {
+			continue
+		}
+		return ipResp.IP, nil
 	}
-	err = json.Unmarshal(resp, &ipResp)
-	if err != nil {
-		return nil, err
-	}
-	return ipResp.IP, nil
+	return nil, fmt.Errorf("GetInternetIP Error")
 }

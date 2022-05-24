@@ -43,7 +43,7 @@ func (s *DDnsServer) compareIP() {
 	}
 	if !intIP.Equal(dnsIP) {
 		s.IpChan <- intIP
-		s.MsgChan <- fmt.Sprintf("IP变动提醒 IntIP：%v DnsID: %v\n", intIP, dnsIP)
+		s.MsgChan <- fmt.Sprintf("IP Change Notice IntIP：%v DnsID: %v\n", intIP, dnsIP)
 	}
 }
 
@@ -68,7 +68,7 @@ func (s *DDnsServer) Run() {
 	go func() {
 		for {
 			s.compareIP()
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 20)
 		}
 	}()
 	go func() {
